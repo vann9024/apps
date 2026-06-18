@@ -12,11 +12,16 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Eventos de Hotmart que indican una compra exitosa
 const PURCHASE_EVENTS = [
   'PURCHASE_APPROVED',
   'PURCHASE_COMPLETE',
   'SUBSCRIPTION_REACTIVATED',
+];
+
+const CANCELLATION_EVENTS = [
+  'SUBSCRIPTION_CANCELLATION',
+  'PURCHASE_REFUNDED',
+  'PURCHASE_CHARGEBACK',
 ];
 
 function generatePassword() {
@@ -45,9 +50,14 @@ module.exports = async function handler(req, res) {
 
     console.log('[hotmart] Evento recibido:', event);
 
-    // Ignorar eventos que no sean compras
-    if (!PURCHASE_EVENTS.includes(event)) {
+    // Ignorar eventos irrelevantes
+    if (!PURCHASE_EVENTS.includes(event) && !CANCELLATION_EVENTS.includes(event)) {
       return res.status(200).json({ received: true, skipped: true, event });
+    }
+
+    // Manejar cancelaciones
+    if (CANCELLATION_EVENTS.includes(event)) {
+      return await handleCancellation(req, res, data, event);
     }
 
     const email = data?.buyer?.email?.toLowerCase().trim();
@@ -77,14 +87,15 @@ module.exports = async function handler(req, res) {
     });
 
     if (createError) {
-      // Si el usuario ya existe, retornar 200 sin error
+      // Si el usuario ya existe, reactivar su salón (puede ser una renovación)
       if (
         createError.message?.includes('already been registered') ||
         createError.message?.includes('already exists') ||
         createError.status === 422
       ) {
-        console.log(`[hotmart] Usuario ${email} ya existe, saltando creación`);
-        return res.status(200).json({ received: true, existing: true });
+        console.log(`[hotmart] Usuario ${email} ya existe, reactivando salón`);
+        await reactivateSalon(email);
+        return res.status(200).json({ received: true, existing: true, reactivated: true });
       }
       throw createError;
     }
@@ -115,6 +126,57 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ received: true, error: err.message });
   }
 };
+
+async function getUserIdByEmail(email) {
+  const { data, error } = await supabase
+    .schema('auth')
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
+  if (error || !data) return null;
+  return data.id;
+}
+
+async function reactivateSalon(email) {
+  const userId = await getUserIdByEmail(email);
+  if (!userId) return;
+  await supabase.from('salons').update({ active: true }).eq('owner_id', userId);
+  console.log(`[hotmart] Salón reactivado: ${email}`);
+}
+
+async function handleCancellation(req, res, data, event) {
+  try {
+    const email = data?.buyer?.email?.toLowerCase().trim() ||
+                  data?.subscriber?.email?.toLowerCase().trim();
+    if (!email) {
+      console.error('[hotmart] Cancelación sin email:', JSON.stringify(data));
+      return res.status(200).json({ received: true, error: 'No email in cancellation payload' });
+    }
+
+    console.log(`[hotmart] Cancelación (${event}): ${email}`);
+
+    const userId = await getUserIdByEmail(email);
+    if (!userId) {
+      console.log(`[hotmart] Usuario no encontrado para cancelación: ${email}`);
+      return res.status(200).json({ received: true, user_not_found: true });
+    }
+
+    const { error } = await supabase
+      .from('salons')
+      .update({ active: false })
+      .eq('owner_id', userId);
+
+    if (error) throw error;
+
+    console.log(`[hotmart] Acceso desactivado: ${email}`);
+    return res.status(200).json({ received: true, deactivated: true });
+
+  } catch (err) {
+    console.error('[hotmart] Error en cancelación:', err);
+    return res.status(200).json({ received: true, error: err.message });
+  }
+}
 
 function buildWelcomeEmail(name, email, password) {
   const firstName = name.split(' ')[0];
