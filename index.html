@@ -1407,6 +1407,33 @@ body {
   </div>
 </div>
 
+<!-- ——— MODAL: CAMBIO DE CONTRASEÑA INICIAL ——— -->
+<div class="modal-overlay" id="modal-change-password">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Crea tu contraseña</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--ink-3);font-size:14px;margin-top:0;line-height:1.5;margin-bottom:18px">Por seguridad, elige una contraseña personal para tu cuenta.</p>
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <div style="position:relative">
+          <input type="password" id="cp-new" placeholder="Mínimo 6 caracteres" style="padding-right:42px;width:100%" onkeydown="if(event.key==='Enter') doChangePassword()">
+          <button type="button" onclick="togglePassVis('cp-new')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-4);padding:4px;display:flex;align-items:center" tabindex="-1"><svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="cp-confirm" placeholder="Repite la contraseña" onkeydown="if(event.key==='Enter') doChangePassword()">
+      </div>
+      <div class="login-error" id="cp-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-full" id="cp-btn" onclick="doChangePassword()">Guardar contraseña</button>
+    </div>
+  </div>
+</div>
+
 <!-- ——— SCREEN: SUSCRIPCIÓN INACTIVA ——— -->
 <div id="screen-inactive" style="display:none;position:fixed;inset:0;z-index:9999;background:#FBF7F9;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(217,79,114,0.10) 0%,transparent 70%);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px">
   <div style="width:64px;height:64px;background:var(--rose-light);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px">
@@ -1687,6 +1714,23 @@ async function doOnboarding() {
   if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Continuar →'; return; }
   closeModal('modal-onboarding');
   await loadSalonForOwner();
+  // Pedir cambio de contraseña la primera vez
+  openModal('modal-change-password');
+}
+
+async function doChangePassword() {
+  const newPass = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const err = document.getElementById('cp-error');
+  err.style.display = 'none';
+  if (newPass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres'; err.style.display = 'block'; return; }
+  if (newPass !== confirm) { err.textContent = 'Las contraseñas no coinciden'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('cp-btn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const { error } = await sb.auth.updateUser({ password: newPass });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Guardar contraseña'; return; }
+  closeModal('modal-change-password');
+  showToast('Contraseña actualizada', 'success');
 }
 
 // ── OWNER VIEW TOGGLE ──────────────────────────

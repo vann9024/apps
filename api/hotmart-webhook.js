@@ -64,6 +64,7 @@ module.exports = async function handler(req, res) {
     const email = data?.buyer?.email?.toLowerCase().trim();
     const name = data?.buyer?.name || data?.buyer?.first_name || 'Comprador';
     const transaction = data?.purchase?.transaction || '';
+    const document = data?.buyer?.document || data?.buyer?.cpf || '';
 
     if (!email) {
       console.error('[hotmart] Sin email en payload:', JSON.stringify(payload));
@@ -72,8 +73,8 @@ module.exports = async function handler(req, res) {
 
     console.log(`[hotmart] Procesando compra: ${email} (${transaction})`);
 
-    // Generar contraseña temporal
-    const tempPassword = generatePassword();
+    // Contraseña = número de documento si está disponible, si no generamos una
+    const tempPassword = document ? document.replace(/\D/g, '') : generatePassword();
 
     // Crear usuario en Supabase con email ya verificado
     const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
