@@ -2,8 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GlowApp — Gestión de Salón</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GlowApp">
+<meta name="theme-color" content="#E8537A">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -38,6 +45,8 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { overflow-x: hidden; max-width: 100vw; }
 
 body {
   font-family: 'DM Sans', sans-serif;
@@ -410,12 +419,191 @@ body {
 .eyedropper-btn:hover { border-color: var(--rose); background: var(--rose-light); }
 .eyedropper-btn.unsupported { opacity: 0.3; cursor: not-allowed; }
 
+/* ——— RESUMEN / SERVICE CARDS (mobile) ——— */
+.resumen-recent-mobile { display: none; }
+.resumen-workers-cards { display: none; }
+.srv-cards-mobile { display: none; }
+.svc-card {
+  background: var(--white);
+  border: 1px solid var(--ink-5);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
+}
+.svc-card:active { box-shadow: none; background: var(--surface-2); }
+.svc-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.svc-card-client { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.svc-card-meta { font-size: 12px; color: var(--ink-4); margin-top: 3px; }
+.svc-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+.svc-card-price { font-size: 17px; font-weight: 700; color: var(--rose); font-family: 'DM Mono', monospace; }
+.svc-cycle-sep { display: flex; align-items: center; gap: 8px; margin: 12px 0 8px; }
+.svc-cycle-sep::before, .svc-cycle-sep::after { content:''; flex:1; height:1px; background: var(--rose-mid); }
+.svc-cycle-sep span { font-size: 10px; font-weight: 600; color: var(--rose-dark); text-transform: uppercase; letter-spacing: .8px; white-space: nowrap; }
+
+/* ——— MOBILE SIDEBAR NAV ——— */
+#mobile-menu-btn { display: none; }
+
+#mobile-sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(26,18,25,0.45);
+  backdrop-filter: blur(2px);
+}
+#mobile-sidebar-overlay.open { display: flex; }
+
+#mobile-sidebar {
+  width: 240px; max-width: 80vw;
+  background: var(--white);
+  height: 100%;
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+  box-shadow: 4px 0 24px rgba(0,0,0,.15);
+}
+#mobile-sidebar-overlay.open #mobile-sidebar { transform: translateX(0); }
+
+#mobile-sidebar .sidebar-header {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--ink-5);
+  display: flex; align-items: center; justify-content: space-between;
+}
+#mobile-sidebar .sidebar-salon-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+#mobile-sidebar .sidebar-close { background: none; border: none; cursor: pointer; padding: 6px; color: var(--ink-3); border-radius: 8px; }
+#mobile-sidebar .sidebar-close:hover { background: var(--surface-2); }
+#mobile-sidebar .sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+#mobile-sidebar .sidebar-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 500; color: var(--ink-3);
+  cursor: pointer; border: none; background: transparent;
+  width: 100%; text-align: left; font-family: inherit;
+  transition: all 0.12s;
+}
+#mobile-sidebar .sidebar-item:hover { background: var(--surface-2); color: var(--ink); }
+#mobile-sidebar .sidebar-item.active { background: var(--rose-light); color: var(--rose); }
+#mobile-sidebar .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
 /* ——— RESPONSIVE ——— */
 @media (max-width: 640px) {
-  .app-content { padding: 16px 12px; }
-  .metrics-grid { grid-template-columns: 1fr 1fr; }
-  .app-nav { overflow-x: auto; }
-  .nav-tab { padding: 12px 12px; font-size: 12px; flex-shrink: 0; }
+  /* === HEADER === */
+  .app-header { padding: 0 12px; height: 52px; }
+  .header-user .user-name, .header-user .user-role { display: none; }
+  #toggle-view-label { display: none; }
+  .header-salon-name { font-size: 13px; }
+  .header-right { gap: 8px; }
+
+  /* === NAV — hidden on mobile, replaced by sidebar === */
+  .app-nav { display: none !important; }
+  #mobile-menu-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: none; border: none; cursor: pointer; color: var(--ink-2); border-radius: 8px; padding: 0; }
+  #mobile-menu-btn:hover { background: var(--surface-2); }
+  /* Hide header logout + toggle on mobile (moved to sidebar) */
+  #header-logout-btn { display: none !important; }
+  #worker-view-toggle { display: none !important; }
+
+  /* === CONTENT === */
+  .app-content { padding: 14px 12px 24px; }
+
+  /* === SECTION HEADERS === */
+  .section-header { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 14px; }
+  .section-header > .btn, .section-header > button.btn { width: 100%; justify-content: center; }
+
+  /* === METRICS === */
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric-card { padding: 12px; }
+  .metric-value { font-size: 20px; }
+  .metric-sub { font-size: 11px; }
+
+  /* === CARDS === */
+  .card-header { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+  .card-body { padding: 12px 14px; }
+
+  /* === TABLES — horizontal scroll === */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .data-table { min-width: 420px; }
+  #recent-services-table, #services-full-table { min-width: 360px; }
+  #liq-history-table { min-width: 380px; }
+
+  /* === FILTERS === */
+  .filters-bar { flex-direction: column; gap: 8px; }
+  .search-input-wrap { min-width: unset !important; width: 100%; }
+  .filter-select { width: 100%; box-sizing: border-box; }
+  .srv-date-row { display: flex; align-items: flex-end; gap: 6px; }
+  .srv-date-field { display: flex; flex-direction: column; gap: 4px; }
+  .srv-date-label { font-size: 11px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: .5px; }
+  .srv-date-clear { align-self: flex-end; padding: 8px 10px !important; min-height: 36px !important; }
+
+  /* === MODALS — bottom sheet === */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { max-width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; position: sticky; bottom: 0; background: var(--white); flex-wrap: wrap; gap: 8px; }
+  .modal-footer .btn { flex: 1; min-width: 0; justify-content: center; }
+  .modal-footer .btn-sm { flex: unset; }
+
+  /* === OPTION GRID (flujo de registro) === */
+  .option-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
+  .option-pill { padding: 8px 6px; font-size: 12px; }
+  .option-pill .opt-price { font-size: 11px; }
+
+  /* === WORKERS === */
+  .workers-grid { grid-template-columns: 1fr; }
+  .worker-card { padding: 14px; }
+
+  /* === CONFIG & LIQ TABS === */
+  .config-tabs { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+  .config-tabs::-webkit-scrollbar { display: none; }
+  .config-tab { white-space: nowrap; flex-shrink: 0; padding: 10px 12px; font-size: 12px; }
+
+  /* === CATALOG === */
+  .catalog-cat-header { flex-wrap: wrap; gap: 6px; }
+  .catalog-step-row { flex-wrap: wrap; gap: 6px; }
+
+  /* === LIQ ROWS === */
+  .liq-worker-row { padding: 12px; gap: 10px; }
+
+  /* === TOAST === */
+  .toast-container { left: 12px; right: 12px; bottom: 12px; align-items: stretch; }
+  .toast { min-width: unset; font-size: 12px; }
+
+  /* === TOUCH TARGETS === */
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 36px; padding: 6px 12px; }
+  .btn-icon { min-height: 44px; min-width: 44px; }
+  .nav-tab { min-height: 46px; }
+  .counter-btn { width: 40px; height: 40px; font-size: 20px; }
+  .autocomplete-item { padding: 12px 14px; }
+
+  /* === TABLE → CARDS === */
+  .srv-table-desktop { display: none !important; }
+  .srv-cards-mobile { display: block; }
+  .resumen-recent-desktop { display: none !important; }
+  .resumen-recent-mobile { display: block; }
+  .resumen-workers-cards { display: block; }
+  #workers-summary .resumen-workers-table { display: none; }
+
+  /* === SERVICE DATE FILTER — una fila con labels === */
+  .srv-date-row { flex-wrap: nowrap; align-items: flex-end; }
+  .srv-date-field { flex: 1; min-width: 0; }
+  .srv-date-field input[type="date"] { font-size: 12px; padding: 7px 6px; }
+
+  /* === SERVICE DETAIL 2-col grids === */
+  .detail-metrics { grid-template-columns: 1fr !important; gap: 8px !important; }
+
+  /* === WORKERS SUMMARY TABLE === */
+  #workers-summary { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* === REPORTE 2-col → 1-col === */
+  #panel-reporte > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+  /* === iOS AUTO-ZOOM FIX: inputs ≥16px evitan que Safari haga zoom al enfocar === */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* === LOGIN === */
+  .login-card { padding: 28px 20px; }
 }
 </style>
 </head>
@@ -488,9 +676,57 @@ body {
 </div>
 
 <!-- ——— MAIN APP ——— -->
+<!-- Mobile sidebar overlay -->
+<div id="mobile-sidebar-overlay" onclick="closeMobileSidebar(event)">
+  <div id="mobile-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-salon-name" id="sidebar-salon-name">Salón</span>
+      <button class="sidebar-close" onclick="closeMobileSidebar()">
+        <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <button class="sidebar-item active" data-tab="resumen" onclick="switchTabMobile('resumen')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 4h16v2H2zm0 5h16v2H2zm0 5h10v2H2z"/></svg>
+        Resumen
+      </button>
+      <button class="sidebar-item" data-tab="servicios" onclick="switchTabMobile('servicios')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 1v2h6V6H7zm0 4v2h6v-2H7zm0 4v2h4v-2H7z"/></svg>
+        Servicios
+      </button>
+      <button class="sidebar-item" id="sidebar-tab-liq" data-tab="liquidaciones" onclick="switchTabMobile('liquidaciones')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1C5 1 1 5 1 10s4 9 9 9 9-4 9-9-4-9-9-9zm1 13H9v-2h2v2zm0-4H9V6h2v4z"/></svg>
+        Liquidaciones
+      </button>
+      <button class="sidebar-item" id="sidebar-tab-reporte" data-tab="reporte" onclick="switchTabMobile('reporte')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zm0 5a1 1 0 011-1h8a1 1 0 110 2H3a1 1 0 01-1-1z"/></svg>
+        Reporte
+      </button>
+      <button class="sidebar-item" id="sidebar-tab-config" data-tab="config" onclick="switchTabMobile('config')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm7-2a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Configuración
+      </button>
+      <!-- Sidebar footer: logout + toggle view -->
+      <div style="padding:12px 8px;border-top:1px solid var(--ink-5);display:flex;flex-direction:column;gap:4px">
+        <button id="sidebar-toggle-view-btn" style="display:none" class="sidebar-item" onclick="toggleOwnerView();closeMobileSidebar()">
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg>
+          <span id="sidebar-toggle-label">Ver como trabajadora</span>
+        </button>
+        <button class="sidebar-item" onclick="doLogout()" style="color:var(--red)">
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h6a1 1 0 100-2H4V5h5a1 1 0 000-2H3zm10.293 4.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L14.586 11H7a1 1 0 110-2h7.586l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </nav>
+  </div>
+</div>
+
 <div id="app-screen" class="screen">
   <header class="app-header">
     <div class="header-brand">
+      <button id="mobile-menu-btn" onclick="openMobileSidebar()" aria-label="Menú">
+        <svg viewBox="0 0 20 20" fill="currentColor" style="width:22px;height:22px"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+      </button>
       <div class="header-logo" id="app-header-logo">
         <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C8.5 2 6 4.5 6 7c0 1.5.6 2.8 1.6 3.7C4.8 11.8 3 14.3 3 17h18c0-2.7-1.8-5.2-4.6-6.3C17.4 9.8 18 8.5 18 7c0-2.5-2.5-5-6-5zm-3 15l1-4h4l1 4H9z"/></svg>
       </div>
@@ -510,7 +746,7 @@ body {
           <div class="user-role" id="header-user-role">Dueña</div>
         </div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Salir</button>
+      <button class="btn btn-ghost btn-sm" id="header-logout-btn" onclick="doLogout()">Salir</button>
     </div>
   </header>
 
@@ -527,6 +763,10 @@ body {
     <button class="nav-tab" id="tab-liq" onclick="switchTab('liquidaciones')" data-tab="liquidaciones">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1C5 1 1 5 1 10s4 9 9 9 9-4 9-9-4-9-9-9zm1 13H9v-2h2v2zm0-4H9V6h2v4z"/></svg>
       Liquidaciones
+    </button>
+    <button class="nav-tab" id="tab-reporte" onclick="switchTab('reporte')" data-tab="reporte">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm0 6a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zm0 5a1 1 0 011-1h8a1 1 0 110 2H3a1 1 0 01-1-1z"/></svg>
+      Reporte
     </button>
     <button class="nav-tab" id="tab-config" onclick="switchTab('config')" data-tab="config">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm7-2a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -562,12 +802,13 @@ body {
       <div class="metrics-grid" id="resumen-metrics"></div>
       <div class="card">
         <div class="card-header"><span class="card-title">Últimos 5 servicios</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-scroll resumen-recent-desktop" style="padding:0">
           <table class="data-table" id="recent-services-table">
             <thead><tr><th>Fecha</th><th>Clienta</th><th>Trabajadora</th><th>Total</th></tr></thead>
             <tbody id="recent-services-body"></tbody>
           </table>
         </div>
+        <div class="resumen-recent-mobile" id="recent-services-cards" style="padding:8px 12px 4px"></div>
       </div>
       <div class="card" id="card-workers-summary">
         <div class="card-header"><span class="card-title" id="workers-summary-title">Acumulado por trabajadora</span></div>
@@ -589,15 +830,18 @@ body {
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/></svg>
           <input type="text" class="form-group input search-input" placeholder="Buscar clienta..." id="srv-search" oninput="filterServices()" style="padding:8px 14px 8px 34px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:13px;outline:none;width:100%;background:white;">
         </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <input type="date" id="srv-date-from" onchange="filterServices()"
-            title="Desde"
-            style="padding:8px 10px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer">
-          <span style="font-size:12px;color:var(--ink-4)">—</span>
-          <input type="date" id="srv-date-to" onchange="filterServices()"
-            title="Hasta"
-            style="padding:8px 10px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer">
-          <button class="btn btn-ghost btn-sm" onclick="clearSrvDates()" title="Limpiar fechas" style="padding:6px 10px;font-size:12px">✕</button>
+        <div class="srv-date-row">
+          <div class="srv-date-field">
+            <label class="srv-date-label">Desde</label>
+            <input type="date" id="srv-date-from" onchange="filterServices()"
+              style="padding:8px 10px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;width:100%">
+          </div>
+          <div class="srv-date-field">
+            <label class="srv-date-label">Hasta</label>
+            <input type="date" id="srv-date-to" onchange="filterServices()"
+              style="padding:8px 10px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;width:100%">
+          </div>
+          <button class="btn btn-ghost btn-sm srv-date-clear" onclick="clearSrvDates()" title="Limpiar fechas">✕</button>
         </div>
         <select class="filter-select" id="srv-month-filter" onchange="filterServices()" style="display:none">
           <option value="">Todos los meses</option>
@@ -607,12 +851,13 @@ body {
         </select>
       </div>
       <div id="srv-filter-summary" style="display:none;background:var(--surface-2);border-radius:var(--r-sm);padding:10px 16px;margin-bottom:8px;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--ink-3)"></div>
-      <div class="card" style="padding:0;overflow:hidden">
+      <div class="card table-scroll srv-table-desktop" style="padding:0">
         <table class="data-table" id="services-full-table">
           <thead><tr><th>Fecha</th><th>Clienta</th><th>Categoría</th><th>Trabajadora</th><th>Total</th><th></th></tr></thead>
           <tbody id="services-full-body"></tbody>
         </table>
       </div>
+      <div id="services-cards" class="srv-cards-mobile"></div>
     </div>
 
     <!-- LIQUIDACIONES TAB -->
@@ -652,11 +897,42 @@ body {
           <button class="btn btn-secondary btn-sm" onclick="clearLiqFilters()">Limpiar</button>
         </div>
         <div id="liq-historial-summary" style="margin-bottom:12px"></div>
-        <div class="card" style="padding:0;overflow:hidden">
+        <div class="card table-scroll" style="padding:0">
           <table class="data-table" id="liq-history-table">
             <thead><tr><th>Fecha</th><th>Trabajadoras</th><th>Servicios</th><th>Total liquidado</th></tr></thead>
             <tbody id="liq-history-body"></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTE TAB -->
+    <div class="tab-panel" id="panel-reporte">
+      <div class="section-header">
+        <div><div class="section-title">Reporte Semanal</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="reportWeekShift(-1)">&#8592;</button>
+          <span id="reporte-week-label" style="font-size:13px;font-weight:500;color:var(--ink-2);min-width:160px;text-align:center"></span>
+          <button class="btn btn-secondary btn-sm" onclick="reportWeekShift(1)">&#8594;</button>
+        </div>
+      </div>
+      <div id="reporte-metrics" class="metrics-grid" style="margin-bottom:16px"></div>
+      <div class="card" style="margin-bottom:16px" id="reporte-workers-card">
+        <div class="card-header"><span class="card-title">Por trabajadora</span></div>
+        <div class="card-body" style="padding:12px 16px" id="reporte-workers-body"></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Por día</span></div>
+        <div class="card-body" style="padding:12px 16px" id="reporte-days-body"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Métodos de pago</span></div>
+          <div class="card-body" style="padding:12px 16px" id="reporte-payment-body"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Servicios realizados</span></div>
+          <div class="card-body" style="padding:12px 16px" id="reporte-items-body"></div>
         </div>
       </div>
     </div>
@@ -696,6 +972,11 @@ body {
             <div class="form-group">
               <label>Nombre del salón</label>
               <input type="text" id="cfg-salon-name" placeholder="Mi Salón">
+            </div>
+            <div class="form-group">
+              <label>Datos de pago <span style="font-size:11px;color:var(--ink-4);font-weight:400">(aparece en el cobro por WhatsApp)</span></label>
+              <textarea id="cfg-payment-info" placeholder="Ej: Nequi 3001234567 a nombre de Mi Salón" rows="2"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:14px;outline:none;resize:vertical;line-height:1.5"></textarea>
             </div>
             <div class="form-group">
               <label>Moneda</label>
@@ -905,6 +1186,10 @@ body {
     <div class="modal-footer">
       <button class="btn btn-danger" onclick="deleteService()" id="btn-delete-service" style="margin-right:auto">Eliminar</button>
       <button class="btn btn-secondary" onclick="editService()" id="btn-edit-service">Editar</button>
+      <a id="btn-wa-client" target="_blank" rel="noopener" style="display:none;align-items:center;gap:6px;padding:8px 14px;background:#25D366;color:white;border-radius:var(--r-sm);font-size:13px;font-weight:600;text-decoration:none;cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.938.536 3.745 1.463 5.287L2 22l4.835-1.447A9.944 9.944 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+        Cobrar
+      </a>
       <button class="btn btn-primary" onclick="closeModal('modal-detalle')">Cerrar</button>
     </div>
   </div>
@@ -1083,6 +1368,23 @@ body {
   </div>
 </div>
 
+<!-- ——— MODAL: ONBOARDING (usuario Hotmart sin salón) ——— -->
+<div class="modal-overlay" id="modal-onboarding">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">¡Bienvenida! 🌸</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--ink-3);font-size:14px;margin-top:0;line-height:1.5">Un último paso antes de empezar. ¿Cómo se llama tu salón?</p>
+      <div class="form-group"><label>Nombre de tu salón</label><input type="text" id="onboarding-salon-name" placeholder="Ej: Glam Studio" onkeydown="if(event.key==='Enter') doOnboarding()"></div>
+      <div class="login-error" id="onboarding-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-full" id="onboarding-btn" onclick="doOnboarding()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ——— MODAL: SIGNUP ——— -->
 <div class="modal-overlay" id="modal-signup">
   <div class="modal">
@@ -1136,7 +1438,9 @@ body {
 // ═══════════════════════════════════════════════
 const SUPABASE_URL = 'https://yojatmwmxxvxhuntthqc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_IPd5kNLMUvh_zw38m6cDnw_SFbvGNjC';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'glowapp-auth' }
+});
 
 // Current session state
 let currentSession = null;  // Supabase session
@@ -1200,10 +1504,7 @@ async function loadSalonForOwner() {
     .single();
 
   if (error || !salon) {
-    // This account has no salon — probably a worker using the admin tab by mistake
-    const loginErr = document.getElementById('login-error');
-    if (loginErr) { loginErr.textContent = 'Este correo no está registrado como dueña de salón. Si eres trabajadora, usa el tab "Trabajadora".'; loginErr.style.display = 'block'; }
-    await sb.auth.signOut();
+    openModal('modal-onboarding');
     return;
   } else {
     currentSalonId = salon.id;
@@ -1215,6 +1516,7 @@ async function loadSalonForOwner() {
     store.config.colorSecondary = salon.color_secondary;
     store.config.logoUrl = salon.logo_url || null;
     store.config.logoDataUrl = salon.logo_url || null; // reuse applyLogo
+    store.config.paymentInfo = salon.payment_info || '';
     store.config.cierre = {
       type: salon.cierre_type, day: salon.cierre_day,
       mday: salon.cierre_mday, q1: salon.cierre_q1,
@@ -1244,12 +1546,13 @@ async function loadAllData() {
 }
 
 async function loadWorkers() {
-  const { data } = await sb.from('workers').select('*').eq('salon_id', currentSalonId).eq('active', true).order('created_at');
+  const { data } = await sb.from('workers').select('*').eq('salon_id', currentSalonId).order('created_at');
   if (data) {
     store.workers = data.map(w => ({
       id: w.id, name: w.name, specialty: w.specialty, pct: w.pct,
       email: w.email, document: w.document, whatsapp: w.whatsapp,
-      color: w.color, initials: w.initials, auth_user_id: w.auth_user_id
+      color: w.color, initials: w.initials, auth_user_id: w.auth_user_id,
+      active: w.active
     }));
   }
 }
@@ -1333,6 +1636,19 @@ function showLoadingOverlay(show) {
 
 function showSignup() { openModal('modal-signup'); }
 
+async function doOnboarding() {
+  const name = document.getElementById('onboarding-salon-name').value.trim();
+  const err = document.getElementById('onboarding-error');
+  err.style.display = 'none';
+  if (!name) { err.textContent = 'Ingresa el nombre de tu salón'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('onboarding-btn');
+  btn.disabled = true; btn.textContent = 'Creando...';
+  const { error } = await sb.from('salons').insert({ owner_id: currentSession.user.id, name });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Continuar →'; return; }
+  closeModal('modal-onboarding');
+  await loadSalonForOwner();
+}
+
 // ── OWNER VIEW TOGGLE ──────────────────────────
 let ownerViewAsWorker = false;  // true = owner is viewing as their worker profile
 
@@ -1356,9 +1672,12 @@ function toggleOwnerView() {
     if (btn) { btn.style.background = 'var(--rose-light)'; btn.style.borderColor = 'var(--rose)'; btn.style.color = 'var(--rose)'; }
     if (roleEl) roleEl.textContent = 'Trabajadora';
     document.getElementById('header-user-name').textContent = ownerWorker.name;
-    // Hide admin-only tabs
+    // Hide admin-only tabs (desktop + sidebar)
     document.getElementById('tab-liq').style.display = 'none';
     document.getElementById('tab-config').style.display = 'none';
+    ['sidebar-tab-liq','sidebar-tab-config'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+    const sidebarTgl = document.getElementById('sidebar-toggle-label');
+    if (sidebarTgl) sidebarTgl.textContent = '← Volver a Admin';
     showToast(`Vista de ${ownerWorker.name}`, 'success');
   } else {
     // Restore admin view
@@ -1369,6 +1688,9 @@ function toggleOwnerView() {
     document.getElementById('header-user-name').textContent = store.config.salonName;
     document.getElementById('tab-liq').style.display = '';
     document.getElementById('tab-config').style.display = '';
+    ['sidebar-tab-liq','sidebar-tab-config'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display=''; });
+    const sidebarTgl2 = document.getElementById('sidebar-toggle-label');
+    if (sidebarTgl2) sidebarTgl2.textContent = 'Ver como trabajadora';
     showToast('Vista de administradora', 'success');
   }
   switchTab('resumen');
@@ -1507,7 +1829,8 @@ async function saveSalonConfigToDB() {
     cierre_mday: store.config.cierre?.mday || null,
     cierre_q1: store.config.cierre?.q1 || 1,
     cierre_q2: store.config.cierre?.q2 || 15,
-    cierre_hora: store.config.cierre?.hora || '23:00'
+    cierre_hora: store.config.cierre?.hora || '23:00',
+    payment_info: store.config.paymentInfo || null
   }).eq('id', currentSalonId);
 }
 
@@ -1662,7 +1985,18 @@ function launchApp() {
   // Show/hide admin tabs
   const isAdmin = currentUser.role === 'admin';
   document.getElementById('tab-liq').style.display = isAdmin ? '' : 'none';
+  document.getElementById('tab-reporte').style.display = '';  // visible para todos
   document.getElementById('tab-config').style.display = isAdmin ? '' : 'none';
+  // Sidebar admin items
+  const sidebarLiq = document.getElementById('sidebar-tab-liq');
+  const sidebarRep = document.getElementById('sidebar-tab-reporte');
+  const sidebarCfg = document.getElementById('sidebar-tab-config');
+  if (sidebarLiq) sidebarLiq.style.display = isAdmin ? '' : 'none';
+  if (sidebarRep) sidebarRep.style.display = '';  // visible para todos
+  if (sidebarCfg) sidebarCfg.style.display = isAdmin ? '' : 'none';
+  // Sidebar salon name
+  const sidebarName = document.getElementById('sidebar-salon-name');
+  if (sidebarName) sidebarName.textContent = store.config.salonName;
   document.getElementById('btn-registrar').style.display = '';
   document.getElementById('btn-registrar-2').style.display = '';
 
@@ -1677,6 +2011,8 @@ function launchApp() {
     const ownerWorker = store.workers.find(w => w.auth_user_id === currentSession?.user?.id);
     const toggleDiv = document.getElementById('worker-view-toggle');
     if (toggleDiv) toggleDiv.style.display = ownerWorker ? 'block' : 'none';
+    const sidebarToggle = document.getElementById('sidebar-toggle-view-btn');
+    if (sidebarToggle) sidebarToggle.style.display = ownerWorker ? '' : 'none';
   }
   setupRealtimeNotifications();
 }
@@ -1832,6 +2168,7 @@ function showScreen(id) {
 
 function switchTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.sidebar-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + tab).classList.add('active');
   if (tab === 'resumen') renderResumen();
@@ -1842,7 +2179,22 @@ function switchTab(tab) {
     renderServices();
   }
   if (tab === 'liquidaciones') renderLiquidaciones();
+  if (tab === 'reporte') renderReporte();
   if (tab === 'config') renderConfig();
+}
+
+function openMobileSidebar() {
+  document.getElementById('mobile-sidebar-overlay').classList.add('open');
+}
+
+function closeMobileSidebar(e) {
+  if (e && e.target !== document.getElementById('mobile-sidebar-overlay')) return;
+  document.getElementById('mobile-sidebar-overlay').classList.remove('open');
+}
+
+function switchTabMobile(tab) {
+  document.getElementById('mobile-sidebar-overlay').classList.remove('open');
+  switchTab(tab);
 }
 
 function switchConfig(cfg) {
@@ -1931,32 +2283,36 @@ function currentMonth() {
 // RESUMEN
 // ═══════════════════════════════════════════════
 function renderResumen() {
-  const cm = currentMonth();
+  const cycleFrom = getCycleStartDate();
+  const today = todayLocalDate();
   const title = document.getElementById('resumen-title');
   const subtitle = document.getElementById('resumen-month');
 
   let visibleServices = store.services;
   if (currentUser.role === 'worker') {
     visibleServices = visibleServices.filter(s => s.workerId === currentUser.workerId);
-    title.textContent = 'Mi Resumen';
+    title.textContent = 'Mi ciclo actual';
   } else {
-    title.textContent = 'Resumen del mes';
+    title.textContent = 'Ciclo en curso';
   }
 
-  const monthSvcs = visibleServices.filter(s => s.date.startsWith(cm));
-  subtitle.textContent = monthName(cm + '-01');
+  // Only services in the current cycle that haven't been liquidated yet
+  const cycleSvcs = visibleServices.filter(s => !s.liquidated && s.date >= cycleFrom && s.date <= today);
+  const cierre = store.config?.cierre || {};
+  const cycleTypeLabel = { semanal: 'semanal', quincenal: 'quincenal', mensual: 'mensual' }[cierre.type] || 'acumulado';
+  subtitle.textContent = `Desde ${fmtDate(cycleFrom)} · ${cycleTypeLabel}`;
 
-  const total = monthSvcs.reduce((a,s) => a + s.total, 0);
-  const workerTotal = monthSvcs.reduce((a,s) => a + s.workerAmount, 0);
+  const total = cycleSvcs.reduce((a,s) => a + s.total, 0);
+  const workerTotal = cycleSvcs.reduce((a,s) => a + s.workerAmount, 0);
   const salonTotal = total - workerTotal;
 
   const metricsEl = document.getElementById('resumen-metrics');
   if (currentUser.role === 'admin') {
     metricsEl.innerHTML = `
       <div class="metric-card highlight">
-        <div class="metric-label">Total del mes</div>
+        <div class="metric-label">Por liquidar</div>
         <div class="metric-value rose">${fmtMoney(total)}</div>
-        <div class="metric-sub">${monthSvcs.length} servicios</div>
+        <div class="metric-sub">${cycleSvcs.length} servicios</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Para el salón</div>
@@ -1967,15 +2323,15 @@ function renderResumen() {
         <div class="metric-value">${fmtMoney(workerTotal)}</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Servicios registrados</div>
-        <div class="metric-value">${monthSvcs.length}</div>
+        <div class="metric-label">Servicios pendientes</div>
+        <div class="metric-value">${cycleSvcs.length}</div>
       </div>`;
   } else {
     metricsEl.innerHTML = `
       <div class="metric-card highlight">
-        <div class="metric-label">Mi acumulado</div>
+        <div class="metric-label">Por cobrar</div>
         <div class="metric-value rose">${fmtMoney(workerTotal)}</div>
-        <div class="metric-sub">${monthSvcs.length} servicios</div>
+        <div class="metric-sub">${cycleSvcs.length} servicios</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Total generado</div>
@@ -1987,7 +2343,7 @@ function renderResumen() {
   const wSummary = document.getElementById('workers-summary');
   if (currentUser.role === 'admin') {
     const byWorker = {};
-    monthSvcs.forEach(s => {
+    cycleSvcs.forEach(s => {
       if (!byWorker[s.workerId]) byWorker[s.workerId] = { name: s.workerName, total: 0, amount: 0, count: 0 };
       byWorker[s.workerId].total += s.total;
       byWorker[s.workerId].amount += s.workerAmount;
@@ -1995,19 +2351,40 @@ function renderResumen() {
     });
     const rows = Object.entries(byWorker);
     if (rows.length === 0) {
-      wSummary.innerHTML = '<p style="font-size:13px;color:var(--ink-4)">Sin servicios este mes</p>';
+      wSummary.innerHTML = '<p style="font-size:13px;color:var(--ink-4)">Sin servicios pendientes en este ciclo</p>';
     } else {
-      wSummary.innerHTML = `<table class="data-table no-click">
-        <thead><tr><th>Trabajadora</th><th>Servicios</th><th>Total generado</th><th>Su parte</th></tr></thead>
-        <tbody>` +
-        rows.map(([id, d]) => `<tr class="no-click"><td><strong>${d.name}</strong></td><td>${d.count}</td><td>${fmtMoney(d.total)}</td><td style="color:var(--rose);font-weight:600">${fmtMoney(d.amount)}</td></tr>`).join('') +
-        `</tbody></table>`;
+      const workerCards = rows.map(([id, d]) => `
+        <div class="svc-card" style="cursor:default;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:15px;font-weight:600;color:var(--ink)">${d.name}</span>
+            <span style="font-size:12px;color:var(--ink-4)">${d.count} servicio${d.count>1?'s':''}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <div>
+              <div style="font-size:10px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Generado</div>
+              <div style="font-size:15px;font-weight:600;color:var(--ink);font-family:'DM Mono',monospace">${fmtMoney(d.total)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Su parte</div>
+              <div style="font-size:15px;font-weight:700;color:var(--rose);font-family:'DM Mono',monospace">${fmtMoney(d.amount)}</div>
+            </div>
+          </div>
+        </div>`).join('');
+      wSummary.innerHTML =
+        `<div class="resumen-workers-table table-scroll" style="padding:0;margin:-16px -20px">
+          <table class="data-table no-click" style="margin:0">
+            <thead><tr><th>Trabajadora</th><th>Servicios</th><th>Total generado</th><th>Su parte</th></tr></thead>
+            <tbody>` +
+          rows.map(([id, d]) => `<tr class="no-click"><td><strong>${d.name}</strong></td><td>${d.count}</td><td>${fmtMoney(d.total)}</td><td style="color:var(--rose);font-weight:600">${fmtMoney(d.amount)}</td></tr>`).join('') +
+          `</tbody></table>
+        </div>
+        <div class="resumen-workers-cards" style="padding:0;margin:-4px -4px">${workerCards}</div>`;
     }
   } else {
     // Worker sees their own breakdown
     const w = store.workers.find(w => w.id === currentUser.workerId);
     wSummary.innerHTML = `<div class="worker-stat"><span class="worker-stat-label">Mi porcentaje</span><span class="worker-stat-value">${w ? w.pct : 50}%</span></div>
-    <div class="worker-stat"><span class="worker-stat-label">Generado para el salón</span><span class="worker-stat-value">${fmtMoney(total - workerTotal)}</span></div>`;
+    <div class="worker-stat"><span class="worker-stat-label">Para el salón este ciclo</span><span class="worker-stat-value">${fmtMoney(salonTotal)}</span></div>`;
   }
 
   // Recent services — adapt columns and workers card visibility by role
@@ -2025,9 +2402,10 @@ function renderResumen() {
 
   const last5 = [...visibleServices].sort((a,b) => b.date.localeCompare(a.date) || (b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5);
   const tbody = document.getElementById('recent-services-body');
+  const recentCardsEl = document.getElementById('recent-services-cards');
   if (last5.length === 0) {
-    const cols = isWorkerView ? 4 : 4;
-    tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:20px;color:var(--ink-4)">Sin servicios aún</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-4)">Sin servicios aún</td></tr>`;
+    if (recentCardsEl) recentCardsEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-4)">Sin servicios aún</div>`;
   } else {
     tbody.innerHTML = last5.map(s => `<tr onclick="showServiceDetail('${s.id}')">
       <td>${fmtDate(s.date)}</td>
@@ -2035,6 +2413,19 @@ function renderResumen() {
       <td>${isWorkerView ? `<span class="badge badge-rose">${s.categoryName}</span>` : s.workerName}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rose)">${fmtMoney(isWorkerView ? s.workerAmount : s.total)}</td>
     </tr>`).join('');
+    if (recentCardsEl) recentCardsEl.innerHTML = last5.map(s => `
+      <div class="svc-card" onclick="showServiceDetail('${s.id}')">
+        <div class="svc-card-top">
+          <div>
+            <div class="svc-card-client">${s.client}</div>
+            <div class="svc-card-meta">${fmtDate(s.date)}${isWorkerView ? '' : ' · ' + s.workerName}</div>
+          </div>
+          <span class="badge badge-rose">${s.categoryName}</span>
+        </div>
+        <div class="svc-card-bottom">
+          <span class="svc-card-price">${fmtMoney(isWorkerView ? s.workerAmount : s.total)}</span>
+        </div>
+      </div>`).join('');
   }
 }
 
@@ -2049,7 +2440,7 @@ function renderServices() {
     if (currentUser.role === 'admin') {
       const curW = wFilter.value;
       wFilter.innerHTML = '<option value="">Todas</option>' +
-        store.workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        store.workers.filter(w => w.active).map(w => `<option value="${w.id}">${w.name}</option>`).join('');
       wFilter.value = curW;
     }
   }
@@ -2103,33 +2494,41 @@ function filterServices() {
     }
   }
 
+  const isWorkerView2 = currentUser.role === 'worker';
+
   if (svcs.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-4)">Sin resultados</td></tr>`;
+    const cardsEl = document.getElementById('services-cards');
+    if (cardsEl) cardsEl.innerHTML = `<div style="text-align:center;padding:40px 16px;color:var(--ink-4)">Sin resultados</div>`;
     return;
   }
-  const isWorkerView2 = currentUser.role === 'worker';
+
   const cols = isWorkerView2 ? 4 : 5;
   const hasCycles = store.config?.cierre?.type && store.config.cierre.type !== 'manual';
   let lastCycle = null;
   const rows = [];
+  const cards = [];
+
   svcs.forEach(s => {
     const cycleStart = hasCycles ? getCycleStartForDate(s.date) : null;
     if (hasCycles && cycleStart !== lastCycle) {
       if (lastCycle !== null) {
-        // The previous cycle ends the day before the newer cycle started
         const cycleEndDate = new Date(lastCycle + 'T00:00:00');
         cycleEndDate.setDate(cycleEndDate.getDate() - 1);
         const cycleEndStr = cycleEndDate.toISOString().slice(0, 10);
+        const sepLabel = `Ciclo ${fmtDate(cycleStart)} – ${fmtDate(cycleEndStr)}`;
         rows.push(`<tr class="no-click"><td colspan="${cols}" style="padding:4px 0">
           <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
             <div style="flex:1;height:1px;background:var(--rose-mid)"></div>
-            <span style="font-size:11px;font-weight:600;color:var(--rose-dark);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap">Ciclo ${fmtDate(cycleStart)} – ${fmtDate(cycleEndStr)}</span>
+            <span style="font-size:11px;font-weight:600;color:var(--rose-dark);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap">${sepLabel}</span>
             <div style="flex:1;height:1px;background:var(--rose-mid)"></div>
           </div>
         </td></tr>`);
+        cards.push(`<div class="svc-cycle-sep"><span>${sepLabel}</span></div>`);
       }
       lastCycle = cycleStart;
     }
+
     rows.push(`<tr onclick="showServiceDetail('${s.id}')">
       <td>${fmtDate(s.date)}</td>
       <td>${s.client}</td>
@@ -2138,8 +2537,29 @@ function filterServices() {
         ? `<td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rose)">${fmtMoney(s.workerAmount)}</td>`
         : `<td>${s.workerName}</td><td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--rose)">${fmtMoney(s.total)}</td>`}
     </tr>`);
+
+    const price = isWorkerView2 ? s.workerAmount : s.total;
+    const meta = isWorkerView2
+      ? fmtDate(s.date)
+      : `${fmtDate(s.date)} · ${s.workerName}`;
+    cards.push(`<div class="svc-card" onclick="showServiceDetail('${s.id}')">
+      <div class="svc-card-top">
+        <div>
+          <div class="svc-card-client">${s.client}</div>
+          <div class="svc-card-meta">${meta}</div>
+        </div>
+        <span class="badge badge-rose">${s.categoryName}</span>
+      </div>
+      <div class="svc-card-bottom">
+        <span class="svc-card-price">${fmtMoney(price)}</span>
+        ${s.paymentMethod ? `<span class="badge badge-gray" style="font-size:11px">${s.paymentMethod}</span>` : ''}
+      </div>
+    </div>`);
   });
+
   tbody.innerHTML = rows.join('');
+  const cardsEl = document.getElementById('services-cards');
+  if (cardsEl) cardsEl.innerHTML = cards.join('');
 }
 
 function clearSrvDates() {
@@ -2160,9 +2580,10 @@ function showServiceDetail(id) {
   if (!s) return;
 
   // Workers only see their own services; admins see all services for that client+date
+  const clientKey = s.client.trim().toLowerCase();
   const siblings = currentUser.role === 'worker'
-    ? store.services.filter(sv => sv.client === s.client && sv.date === s.date && sv.workerId === currentUser.workerId)
-    : store.services.filter(sv => sv.client === s.client && sv.date === s.date);
+    ? store.services.filter(sv => sv.client.trim().toLowerCase() === clientKey && sv.date === s.date && sv.workerId === currentUser.workerId)
+    : store.services.filter(sv => sv.client.trim().toLowerCase() === clientKey && sv.date === s.date);
   const isGroup = siblings.length > 1;
 
   const body = document.getElementById('detalle-body');
@@ -2196,10 +2617,10 @@ function showServiceDetail(id) {
       </div>
     </div>
     ${serviceBlocks}
-    ${isGroup ? `<div style="border-top:2px solid var(--rose-mid);padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    ${isGroup ? `<div class="detail-metrics" style="border-top:2px solid var(--rose-mid);padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="metric-card"><div class="metric-label">${currentUser.role === 'worker' ? 'Total clienta' : 'Total del día'}</div><div class="metric-value" style="font-size:20px">${fmtMoney(grandTotal)}</div></div>
       <div class="metric-card highlight"><div class="metric-label">${currentUser.role === 'worker' ? 'Mi parte' : 'Total trabajadoras'}</div><div class="metric-value rose" style="font-size:20px">${fmtMoney(grandWorker)}</div></div>
-    </div>` : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    </div>` : `<div class="detail-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="metric-card"><div class="metric-label">${currentUser.role === 'worker' ? 'Total servicio' : 'Para el salón'}</div><div class="metric-value" style="font-size:18px">${fmtMoney(currentUser.role === 'worker' ? s.total : s.total - s.workerAmount)}</div></div>
       <div class="metric-card highlight"><div class="metric-label">${currentUser.role === 'worker' ? 'Mi parte' : 'Para ' + s.workerName.split(' ')[0]}</div><div class="metric-value rose" style="font-size:18px">${fmtMoney(s.workerAmount)}</div></div>
     </div>`}
@@ -2207,7 +2628,52 @@ function showServiceDetail(id) {
   document.getElementById('btn-edit-service').style.display = currentUser.role === 'admin' ? '' : 'none';
   const delBtn = document.getElementById('btn-delete-service');
   if (delBtn) delBtn.style.display = currentUser.role === 'admin' ? '' : 'none';
+
+  // WhatsApp "Cobrar" button
+  const waBtn = document.getElementById('btn-wa-client');
+  if (waBtn) {
+    const waMsg = buildClientWaMsg(siblings, s.client, grandTotal);
+    const phone = (store.clientData?.[s.client]?.phone || '').replace(/\D/g, '');
+    waBtn.href = phone
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`
+      : `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+    waBtn.style.display = 'inline-flex';
+  }
+
   openModal('modal-detalle');
+}
+
+function buildClientWaMsg(siblings, clientName, grandTotal) {
+  const salonName = store.config.salonName || 'el salón';
+  const paymentInfo = store.config.paymentInfo || '';
+  const date = siblings[0]?.date || '';
+  const firstName = clientName.split(' ')[0];
+
+  // Unique payment methods across siblings
+  const methods = [...new Set(siblings.map(sv => sv.paymentMethod).filter(Boolean))];
+
+  const lines = [
+    `Hola ${firstName}! 🌸`,
+    `Aquí tu cuenta del día en ${salonName}:`,
+    ``,
+    `📅 ${fmtDate(date)}`,
+  ];
+  siblings.forEach(sv => {
+    lines.push(``);
+    lines.push(`💅 ${sv.categoryName}`);
+    sv.items.forEach(it => lines.push(`  · ${it.name} — ${fmtMoney(it.price)}`));
+    if (siblings.length > 1) lines.push(`  Subtotal: ${fmtMoney(sv.total)}`);
+  });
+  lines.push(``);
+  lines.push(`💰 Total: ${fmtMoney(grandTotal)}`);
+  if (methods.length) {
+    lines.push(`💳 Pago: ${methods.join(' / ')}`);
+    if (paymentInfo) lines.push(`   ${paymentInfo}`);
+  } else if (paymentInfo) {
+    lines.push(`💳 ${paymentInfo}`);
+  }
+  lines.push(``, `¡Gracias por visitarnos! 🥰`);
+  return lines.join('\n');
 }
 
 function editServiceById(id) {
@@ -2254,13 +2720,53 @@ let regFlow = { step: 0, client: '', categoryId: '', stepSelections: {}, editId:
 
 function openRegistro(editId = null) {
   const today = todayLocalDate();
-  regFlow = { step: 0, client: '', categoryId: '', stepSelections: {}, editId, date: today };
+  regFlow = { step: 0, client: '', categoryId: '', stepSelections: {}, extras: [], editId, date: today, paymentMethod: '' };
   if (editId) {
     const s = store.services.find(sv => sv.id === editId);
     if (s) {
       regFlow.client = s.client;
       regFlow.categoryId = s.categoryId;
       regFlow.date = s.date || today;
+      regFlow.paymentMethod = s.paymentMethod || '';
+      // Reconstruct stepSelections from saved items
+      if (s.items && s.categoryId) {
+        const cat = store.catalog.find(c => c.id === s.categoryId);
+        if (cat) {
+          const used = new Set();
+          cat.steps.forEach(step => {
+            if (step.type === 'single') {
+              const idx = s.items.findIndex((it, i) => !used.has(i) && step.options.some(o => o.name === it.name));
+              if (idx !== -1) {
+                const it = s.items[idx];
+                const opt = step.options.find(o => o.name === it.name);
+                regFlow.stepSelections[step.id] = { selected: it.name, price: it.price, isFree: opt?.free || false };
+                used.add(idx);
+              }
+            } else if (step.type === 'multiple') {
+              const matches = s.items.map((it, i) => ({ it, i })).filter(({ it, i }) => !used.has(i) && step.options.some(o => o.name === it.name));
+              if (matches.length) {
+                regFlow.stepSelections[step.id] = { selected: matches.map(m => m.it.name), prices: matches.map(m => m.it.price) };
+                matches.forEach(m => used.add(m.i));
+              }
+            } else if (step.type === 'counter') {
+              const prefix = step.name + ' x';
+              const idx = s.items.findIndex((it, i) => !used.has(i) && it.name.startsWith(prefix));
+              if (idx !== -1) {
+                regFlow.stepSelections[step.id] = { count: parseInt(s.items[idx].name.slice(prefix.length)) || 0 };
+                used.add(idx);
+              }
+            } else if (step.type === 'free') {
+              const idx = s.items.findIndex((it, i) => !used.has(i) && it.name === step.name);
+              if (idx !== -1) {
+                regFlow.stepSelections[step.id] = { price: s.items[idx].price };
+                used.add(idx);
+              }
+            }
+          });
+          // Items that didn't match any step → extras
+          regFlow.extras = s.items.filter((_, i) => !used.has(i)).map(it => ({ name: it.name, price: it.price }));
+        }
+      }
     }
     document.getElementById('registro-modal-title').textContent = 'Editar Servicio';
   } else {
@@ -2425,7 +2931,7 @@ function renderFlowSummary() {
   // For admin: full dropdown. For worker: show a read-only chip with their name.
   const editedWorkerId = regFlow.editId ? store.services.find(s=>s.id===regFlow.editId)?.workerId : '';
   const ownerUid = currentSession?.user?.id;
-  const sortedWorkers = [...store.workers].sort((a, b) => {
+  const sortedWorkers = [...store.workers].filter(w => w.active).sort((a, b) => {
     if (a.auth_user_id === ownerUid) return -1;
     if (b.auth_user_id === ownerUid) return 1;
     return 0;
@@ -2643,6 +3149,8 @@ async function saveService(items, total) {
       const newId = await saveServiceToDB(serviceData, items);
       const tmp = store.services.find(s => s.id && s.id.startsWith('sv_tmp_'));
       if (tmp) tmp.id = newId;
+      renderResumen();
+      if (document.getElementById('panel-servicios').classList.contains('active')) renderServices();
       showToast('Servicio registrado', 'success');
     }
   } catch(err) {
@@ -3123,6 +3631,7 @@ async function confirmLiquidacion() {
 
   const confirmedIds = window._liqConfirmedWorkerIds || [];
   const checkedWorkers = [];
+  const waData = []; // per-worker data for WhatsApp messages
   let totalAmount = 0;
   let serviceCount = 0;
   const liquidatedIds = [];
@@ -3136,19 +3645,23 @@ async function confirmLiquidacion() {
     if (!w) return;
     const svcs = store.services.filter(s => !s.liquidated && s.workerId === wId && (!liqFrom2 || s.date >= liqFrom2) && (!liqTo2 || s.date <= liqTo2));
     if (svcs.length === 0) return;
+    const wTotal = svcs.reduce((a,s) => a + s.workerAmount, 0);
     checkedWorkers.push(w.name);
+    waData.push({ name: w.name, whatsapp: w.whatsapp || '', count: svcs.length, total: wTotal, pct: w.pct });
     svcs.forEach(s => { s.liquidated = true; totalAmount += s.workerAmount; serviceCount++; liquidatedIds.push(s.id); });
   });
 
   if (checkedWorkers.length === 0) { closeModal('modal-liq'); return; }
 
-  const liqId = 'liq' + Date.now();
-    const tempLiqId = 'liq_tmp_' + Date.now();
+  const tempLiqId = 'liq_tmp_' + Date.now();
   store.liquidations.unshift({ id: tempLiqId, date: new Date().toISOString().slice(0,10), workers: checkedWorkers, total: totalAmount, services: serviceCount, serviceIds: liquidatedIds });
   liquidatedIds.forEach(sid => { const svc = store.services.find(s => s.id === sid); if (svc) svc.liquidated = true; });
   window._liqConfirmedWorkerIds = null;
-  closeModal('modal-liq');
+
+  // Show WhatsApp messages in the modal instead of closing it
+  showLiqWhatsAppStep(waData, liqFrom2, liqTo2, totalAmount);
   renderLiquidaciones();
+  renderResumen();
   showToastWithUndo(`Liquidación de ${fmtMoney(totalAmount)} confirmada`, tempLiqId, liquidatedIds);
   try {
     const realLiqId = await saveLiquidationToDB(checkedWorkers, totalAmount, serviceCount, liquidatedIds, liqFrom2, liqTo2);
@@ -3157,6 +3670,68 @@ async function confirmLiquidacion() {
     const toastEl = document.getElementById('toast-liq-' + tempLiqId);
     if (toastEl) { toastEl.id = 'toast-liq-' + realLiqId; toastEl.querySelector('button').setAttribute('onclick', `undoLiquidacion('${realLiqId}')`); }
   } catch(err) { showToast('Error guardando liquidación', 'error'); console.error(err); }
+}
+
+function copyLiqMsg(idx) {
+  const msgs = window._liqWaMsgs || [];
+  if (!msgs[idx]) return;
+  navigator.clipboard.writeText(msgs[idx]).then(() => showToast('Mensaje copiado', 'success'));
+}
+
+function showLiqWhatsAppStep(waData, from, to, totalAmount) {
+  const salonName = store.config.salonName || 'el salón';
+  const body = document.getElementById('liq-modal-body');
+  const footer = document.getElementById('liq-modal-footer');
+
+  const buildMsg = d => [
+    `Hola ${d.name}! 🌸`,
+    ``,
+    `Te confirmamos tu liquidación en ${salonName}:`,
+    ``,
+    `📅 Período: ${fmtDate(from)} → ${fmtDate(to)}`,
+    `💅 Servicios: ${d.count}`,
+    `💰 Tu parte (${d.pct}%): ${fmtMoney(d.total)}`,
+    ``,
+    `¡Gracias por tu trabajo!`
+  ].join('\n');
+
+  // Store messages globally so onclick handlers can access them safely
+  window._liqWaMsgs = waData.map(d => buildMsg(d));
+
+  body.innerHTML = `
+    <div style="background:var(--green-light);border:1px solid #A8DFC8;border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px;color:var(--green);flex-shrink:0"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+      <span style="font-size:13px;font-weight:500;color:var(--green)">Liquidación registrada · ${fmtMoney(totalAmount)} total</span>
+    </div>
+    <p style="font-size:13px;font-weight:500;color:var(--ink-2);margin-bottom:12px">Mensajes para las trabajadoras:</p>
+    ${waData.map((d, idx) => {
+      const msg = window._liqWaMsgs[idx];
+      const phone = d.whatsapp ? d.whatsapp.replace(/\D/g, '') : '';
+      const waLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : '';
+      const waBtn = waLink
+        ? `<a href="${waLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#25D366;color:white;border-radius:var(--r-sm);font-size:13px;font-weight:600;text-decoration:none;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.938.536 3.745 1.463 5.287L2 22l4.835-1.447A9.944 9.944 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+            Enviar a ${d.name.split(' ')[0]}
+          </a>`
+        : '';
+      return `
+        <div style="border:1px solid var(--surface-3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:14px;font-weight:600;color:var(--ink)">${d.name}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--rose);font-family:'DM Mono',monospace">${fmtMoney(d.total)}</span>
+          </div>
+          <pre style="font-size:12px;color:var(--ink-3);white-space:pre-wrap;line-height:1.5;background:var(--surface-2);padding:10px;border-radius:6px;margin:0 0 10px;font-family:inherit">${msg}</pre>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${waBtn}
+            <button onclick="copyLiqMsg(${idx})" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface-3);color:var(--ink-2);border:none;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">
+              <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+              Copiar
+            </button>
+          </div>
+        </div>`;
+    }).join('')}`;
+
+  footer.innerHTML = `<button class="btn btn-primary" onclick="closeModal('modal-liq')">Listo, cerrar</button>`;
 }
 
 function showToastWithUndo(msg, liqId, serviceIds) {
@@ -3228,6 +3803,8 @@ function showToast(msg, type = '') {
 // ═══════════════════════════════════════════════
 function renderConfig() {
   document.getElementById('cfg-salon-name').value = store.config.salonName;
+  const piEl = document.getElementById('cfg-payment-info');
+  if (piEl) piEl.value = store.config.paymentInfo || '';
   document.getElementById('cfg-moneda').value = store.config.moneda;
 }
 
@@ -3382,6 +3959,7 @@ function openEyedropper(which) {
 
 async function saveIdentidad() {
   store.config.salonName = document.getElementById('cfg-salon-name').value || 'Mi Salón';
+  store.config.paymentInfo = document.getElementById('cfg-payment-info')?.value.trim() || '';
   const monedaVal = document.getElementById('cfg-moneda').value;
   if (monedaVal === 'custom') {
     const customSym = document.getElementById('cfg-moneda-custom')?.value.trim() || '$';
@@ -3407,10 +3985,10 @@ function renderWorkersConfig() {
   const list = document.getElementById('workers-config-list');
   if (!list) return;
   list.innerHTML = store.workers.map((w, idx) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--surface-3)">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--surface-3);opacity:${w.active ? 1 : 0.55}">
       <div class="worker-avatar" style="background:${w.color}22;color:${w.color};font-size:13px">${w.initials}</div>
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:500;color:var(--ink)">${w.name}</div>
+        <div style="font-size:14px;font-weight:500;color:var(--ink)">${w.name}${w.active ? '' : ' <span style="font-size:11px;color:var(--ink-3);font-weight:400">(inactiva)</span>'}</div>
         <div style="font-size:12px;color:var(--ink-3)">${w.specialty} · ${w.pct}%</div>
       </div>
       <button class="btn btn-secondary btn-sm" onclick="openEditWorker(${idx})">Editar</button>
@@ -4123,13 +4701,279 @@ async function saveCierre() {
 }
 
 // ═══════════════════════════════════════════════
-// INIT
+// REPORTE SEMANAL
 // ═══════════════════════════════════════════════
+let _reportWeekOffset = 0; // 0 = current week, -1 = last week, etc.
+
+function getWeekRange(offset) {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return { from: fmt(monday), to: fmt(sunday), mondayDate: monday, sundayDate: sunday };
+}
+
+function reportWeekShift(dir) {
+  _reportWeekOffset += dir;
+  renderReporte();
+}
+
+function renderReporte() {
+  const { from, to, mondayDate, sundayDate } = getWeekRange(_reportWeekOffset);
+
+  // Label
+  const labelEl = document.getElementById('reporte-week-label');
+  const opts = { day: 'numeric', month: 'short' };
+  if (labelEl) {
+    const f = mondayDate.toLocaleDateString('es-CO', opts);
+    const t = sundayDate.toLocaleDateString('es-CO', opts);
+    const yr = sundayDate.getFullYear();
+    labelEl.textContent = `${f} – ${t}, ${yr}`;
+  }
+
+  const isWorker = currentUser && currentUser.role === 'worker';
+  const svcs = store.services.filter(s =>
+    s.date >= from && s.date <= to &&
+    (!isWorker || s.workerId === currentUser.workerId)
+  );
+
+  const total = svcs.reduce((a, s) => a + s.total, 0);
+  const myEarnings = svcs.reduce((a, s) => a + s.workerAmount, 0);
+  const salonTotal = total - myEarnings;
+
+  // Mostrar/ocultar sección "Por trabajadora"
+  const workersCard = document.getElementById('reporte-workers-card');
+  if (workersCard) workersCard.style.display = isWorker ? 'none' : '';
+
+  // Metrics
+  const metricsEl = document.getElementById('reporte-metrics');
+  if (metricsEl) {
+    metricsEl.innerHTML = isWorker ? `
+      <div class="metric-card highlight">
+        <div class="metric-label">Mis ganancias</div>
+        <div class="metric-value rose">${fmtMoney(myEarnings)}</div>
+        <div class="metric-sub">${svcs.length} servicios</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Valor total atendido</div>
+        <div class="metric-value">${fmtMoney(total)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Ticket promedio</div>
+        <div class="metric-value">${svcs.length ? fmtMoney(Math.round(total / svcs.length)) : fmtMoney(0)}</div>
+      </div>` : `
+      <div class="metric-card highlight">
+        <div class="metric-label">Total semana</div>
+        <div class="metric-value rose">${fmtMoney(total)}</div>
+        <div class="metric-sub">${svcs.length} servicios</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Para el salón</div>
+        <div class="metric-value">${fmtMoney(salonTotal)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Para trabajadoras</div>
+        <div class="metric-value">${fmtMoney(myEarnings)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Ticket promedio</div>
+        <div class="metric-value">${svcs.length ? fmtMoney(Math.round(total / svcs.length)) : fmtMoney(0)}</div>
+      </div>`;
+  }
+
+  // Shared donut builder
+  const REPORT_COLORS = ['#E8537A','#C9913A','#2E9E6B','#5B8DEF','#9B59B6','#E67E22','#1ABC9C','#E91E63'];
+  function buildDonut(entries, emptyMsg) {
+    // entries: [{ label, sub, display, value }] — value used for proportions, display shown on right
+    if (!entries.length) return `<p style="color:var(--ink-4);font-size:13px">${emptyMsg}</p>`;
+    const grand = entries.reduce((a, e) => a + e.value, 0) || 1;
+    const R = 52, r = 30, cx = 64, cy = 64;
+    let angle = -Math.PI / 2;
+    const slices = entries.map((e, i) => {
+      const frac = e.value / grand;
+      const sweep = frac * 2 * Math.PI;
+      const x1 = cx + R * Math.cos(angle), y1 = cy + R * Math.sin(angle);
+      const x2 = cx + R * Math.cos(angle + sweep), y2 = cy + R * Math.sin(angle + sweep);
+      const xi1 = cx + r * Math.cos(angle), yi1 = cy + r * Math.sin(angle);
+      const xi2 = cx + r * Math.cos(angle + sweep), yi2 = cy + r * Math.sin(angle + sweep);
+      const lg = sweep > Math.PI ? 1 : 0;
+      const path = `M${x1},${y1} A${R},${R},0,${lg},1,${x2},${y2} L${xi2},${yi2} A${r},${r},0,${lg},0,${xi1},${yi1} Z`;
+      angle += sweep;
+      return { path, color: REPORT_COLORS[i % REPORT_COLORS.length], frac, ...e };
+    });
+    const svgPaths = slices.map(s => `<path d="${s.path}" fill="${s.color}" stroke="white" stroke-width="1.5"/>`).join('');
+    const legend = slices.map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--surface-3)">
+        <div style="display:flex;align-items:center;gap:7px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--ink)">${s.label}</div>
+            <div style="font-size:11px;color:var(--ink-4)">${s.sub}</div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);white-space:nowrap">${s.display}</div>
+      </div>`).join('');
+    return `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <svg width="128" height="128" viewBox="0 0 128 128" style="flex-shrink:0">${svgPaths}</svg>
+      <div style="flex:1;min-width:140px">${legend}</div>
+    </div>`;
+  }
+
+  // By worker — donut (share of total revenue)
+  const byWorker = {};
+  svcs.forEach(s => {
+    if (!byWorker[s.workerId]) byWorker[s.workerId] = { name: s.workerName, count: 0, total: 0, workerAmt: 0 };
+    byWorker[s.workerId].count++;
+    byWorker[s.workerId].total += s.total;
+    byWorker[s.workerId].workerAmt += s.workerAmount;
+  });
+  const workerRows = Object.values(byWorker).sort((a, b) => b.total - a.total);
+  const grandWorkerTotal = workerRows.reduce((a, d) => a + d.total, 0) || 1;
+  const wBody = document.getElementById('reporte-workers-body');
+  if (wBody) {
+    const wEntries = workerRows.map(d => ({
+      label: d.name,
+      sub: `${d.count} svc · ${Math.round(d.total / grandWorkerTotal * 100)}% · parte: ${fmtMoney(d.workerAmt)}`,
+      display: fmtMoney(d.total),
+      value: d.total
+    }));
+    wBody.innerHTML = buildDonut(wEntries, 'Sin servicios esta semana');
+  }
+
+  // By day
+  const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const byDay = {};
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mondayDate);
+    d.setDate(mondayDate.getDate() + i);
+    const pad = n => String(n).padStart(2,'0');
+    const key = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    byDay[key] = { label: DAY_NAMES[i], count: 0, total: 0 };
+  }
+  svcs.forEach(s => { if (byDay[s.date]) { byDay[s.date].count++; byDay[s.date].total += isWorker ? s.workerAmount : s.total; } });
+  const maxDayTotal = Math.max(...Object.values(byDay).map(d => d.total), 1);
+  const daysEl = document.getElementById('reporte-days-body');
+  if (daysEl) {
+    daysEl.innerHTML = Object.entries(byDay).map(([, d]) => {
+      const pct = Math.round((d.total / maxDayTotal) * 100);
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:500;color:var(--ink-3);width:28px;flex-shrink:0">${d.label}</span>
+        <div style="flex:1;background:var(--surface-3);border-radius:4px;height:8px;overflow:hidden">
+          <div style="width:${pct}%;background:var(--rose);height:100%;border-radius:4px"></div>
+        </div>
+        <span style="font-size:12px;color:var(--ink-2);width:80px;text-align:right;font-family:'DM Mono',monospace">${d.count ? fmtMoney(d.total) : '—'}</span>
+        <span style="font-size:11px;color:var(--ink-4);width:24px;text-align:right">${d.count || ''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Payment methods — donut
+  const byPayment = {};
+  svcs.forEach(s => {
+    const pm = s.paymentMethod || 'No especificado';
+    if (!byPayment[pm]) byPayment[pm] = { count: 0, total: 0, workerAmt: 0 };
+    byPayment[pm].count++;
+    byPayment[pm].total += s.total;
+    byPayment[pm].workerAmt += s.workerAmount;
+  });
+  const pmEl = document.getElementById('reporte-payment-body');
+  if (pmEl) {
+    const pmVal = d => isWorker ? d.workerAmt : d.total;
+    const grandPm = Object.values(byPayment).reduce((a, d) => a + pmVal(d), 0) || 1;
+    const pmEntries = Object.entries(byPayment).sort((a, b) => pmVal(b[1]) - pmVal(a[1]))
+      .map(([pm, d]) => ({
+        label: pm,
+        sub: `${d.count} svc · ${Math.round(pmVal(d) / grandPm * 100)}%`,
+        display: fmtMoney(pmVal(d)),
+        value: pmVal(d)
+      }));
+    pmEl.innerHTML = buildDonut(pmEntries, 'Sin datos');
+  }
+
+  // Service items — donut (by count)
+  const itemCounts = {};
+  svcs.forEach(s => {
+    (s.items || []).forEach(i => {
+      if (!itemCounts[i.name]) itemCounts[i.name] = { count: 0, total: 0 };
+      itemCounts[i.name].count++;
+      itemCounts[i.name].total += i.price;
+    });
+  });
+  const grandItemCount = Object.values(itemCounts).reduce((a, d) => a + d.count, 0) || 1;
+  const itemEntries = Object.entries(itemCounts).sort((a, b) => b[1].count - a[1].count).slice(0, 8)
+    .map(([name, d]) => ({
+      label: name,
+      sub: `${Math.round(d.count / grandItemCount * 100)}% del total`,
+      display: `${d.count}×`,
+      value: d.count
+    }));
+  const itemsEl = document.getElementById('reporte-items-body');
+  if (itemsEl) itemsEl.innerHTML = buildDonut(itemEntries, 'Sin datos');
+}
+
+// ═══════════════════════════════════════════════
+// INIT — session auto-restore
+// ═══════════════════════════════════════════════
+async function checkExistingSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  currentSession = session;
+  // Try to restore as admin
+  const { data: salon } = await sb.from('salons').select('*').eq('owner_id', session.user.id).single();
+  if (salon) {
+    currentSalonId = salon.id;
+    store.config.salonName = salon.name;
+    store.config.moneda = salon.moneda;
+    store.config.monedaSymbol = salon.moneda_symbol;
+    store.config.color = salon.color_primary;
+    store.config.colorSecondary = salon.color_secondary;
+    store.config.logoUrl = salon.logo_url || null;
+    store.config.logoDataUrl = salon.logo_url || null;
+    store.config.paymentInfo = salon.payment_info || '';
+    store.config.cierre = {
+      type: salon.cierre_type, day: salon.cierre_day,
+      mday: salon.cierre_mday, q1: salon.cierre_q1,
+      q2: salon.cierre_q2, hora: salon.cierre_hora
+    };
+    currentUser = { role: 'admin', workerName: salon.name };
+    await loadAllData();
+    launchApp();
+    return;
+  }
+  // Try to restore as worker
+  const { data: workerRow } = await sb.from('workers').select('*, salons(*)').eq('auth_user_id', session.user.id).eq('active', true).single();
+  if (workerRow) {
+    currentSalonId = workerRow.salon_id;
+    currentWorkerRecord = workerRow;
+    if (workerRow.salons) {
+      const s = workerRow.salons;
+      store.config.salonName = s.name;
+      store.config.moneda = s.moneda;
+      store.config.monedaSymbol = s.moneda_symbol;
+      store.config.color = s.color_primary;
+      store.config.colorSecondary = s.color_secondary;
+      store.config.logoUrl = s.logo_url || null;
+      store.config.logoDataUrl = s.logo_url || null;
+    }
+    currentUser = { role: 'worker', workerId: workerRow.id, workerName: workerRow.name };
+    await loadAllData();
+    launchApp();
+    return;
+  }
+  // Session valid but no matching record — clear it
+  await sb.auth.signOut();
+}
+checkExistingSession();
+
 function initMonthFilters() {
   const wFilter = document.getElementById('srv-worker-filter');
   if (wFilter) {
     wFilter.innerHTML = '<option value="">Todas</option>' +
-      store.workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+      store.workers.filter(w => w.active).map(w => `<option value="${w.id}">${w.name}</option>`).join('');
   }
 }
 initMonthFilters();
@@ -4140,6 +4984,11 @@ function toggleLiqRow(id) {
   if (!chk) return;
   chk.checked = !chk.checked;
   row.classList.toggle('checked', chk.checked);
+}
+
+// ── PWA SERVICE WORKER ──────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
 </body>
