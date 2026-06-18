@@ -72,9 +72,11 @@ module.exports = async function handler(req, res) {
     }
 
     console.log(`[hotmart] Procesando compra: ${email} (${transaction})`);
+    console.log(`[hotmart] Buyer data:`, JSON.stringify(data?.buyer));
 
     // Contraseña = número de documento si está disponible, si no generamos una
     const tempPassword = document ? document.replace(/\D/g, '') : generatePassword();
+    console.log(`[hotmart] Contraseña usada: ${document ? 'documento' : 'aleatoria'}`);
 
     // Crear usuario en Supabase con email ya verificado
     const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
