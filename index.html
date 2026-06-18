@@ -1407,6 +1407,16 @@ body {
   </div>
 </div>
 
+<!-- ——— SCREEN: SUSCRIPCIÓN INACTIVA ——— -->
+<div id="screen-inactive" style="display:none;position:fixed;inset:0;z-index:9999;background:#FBF7F9;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(217,79,114,0.10) 0%,transparent 70%);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px">
+  <div style="width:64px;height:64px;background:var(--rose-light);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
+  <h2 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);margin-bottom:10px">Suscripción inactiva</h2>
+  <p style="color:var(--ink-3);font-size:15px;line-height:1.6;max-width:320px;margin-bottom:32px">Tu cuenta está pausada. Renueva tu suscripción para volver a acceder a tus datos.</p>
+  <button class="btn btn-primary" onclick="sb.auth.signOut().then(()=>location.reload())" style="margin-bottom:12px">Cerrar sesión</button>
+</div>
+
 <!-- ——— MODAL: SIGNUP ——— -->
 <div class="modal-overlay" id="modal-signup">
   <div class="modal">
@@ -1527,6 +1537,9 @@ async function loadSalonForOwner() {
 
   if (error || !salon) {
     openModal('modal-onboarding');
+    return;
+  } else if (salon.active === false) {
+    showInactiveScreen();
     return;
   } else {
     currentSalonId = salon.id;
@@ -1657,6 +1670,11 @@ function showLoadingOverlay(show) {
 
 
 function showSignup() { openModal('modal-signup'); }
+
+function showInactiveScreen() {
+  const el = document.getElementById('screen-inactive');
+  el.style.display = 'flex';
+}
 
 async function doOnboarding() {
   const name = document.getElementById('onboarding-salon-name').value.trim();
