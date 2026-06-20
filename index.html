@@ -1390,19 +1390,55 @@ body {
   </div>
 </div>
 
-<!-- ——— MODAL: ONBOARDING (usuario Hotmart sin salón) ——— -->
-<div class="modal-overlay" id="modal-onboarding">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">¡Bienvenida! 🌸</span>
-    </div>
-    <div class="modal-body">
-      <p style="color:var(--ink-3);font-size:14px;margin-top:0;line-height:1.5">Un último paso antes de empezar. ¿Cómo se llama tu salón?</p>
-      <div class="form-group"><label>Nombre de tu salón</label><input type="text" id="onboarding-salon-name" placeholder="Ej: Glam Studio" onkeydown="if(event.key==='Enter') doOnboarding()"></div>
-      <div class="login-error" id="onboarding-error" style="display:none"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary btn-full" id="onboarding-btn" onclick="doOnboarding()">Continuar →</button>
+<!-- ——— SCREEN: ONBOARDING WIZARD ——— -->
+<div id="screen-onboarding" style="display:none;position:fixed;inset:0;z-index:9998;background:#FBF7F9;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(217,79,114,0.10) 0%,transparent 70%);overflow-y:auto">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:100%;max-width:400px">
+
+      <!-- Progress -->
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:36px">
+        <div id="ob-dot-1" style="width:24px;height:6px;border-radius:3px;background:#E8537A;transition:all .3s"></div>
+        <div id="ob-dot-2" style="width:6px;height:6px;border-radius:3px;background:#F0D0D9;transition:all .3s"></div>
+      </div>
+
+      <!-- Step 1: Nombre del estudio -->
+      <div id="ob-step-1">
+        <div style="text-align:center;margin-bottom:28px">
+          <div style="font-size:44px;margin-bottom:14px">🌸</div>
+          <h2 id="ob-welcome-title" style="font-size:22px;font-weight:700;color:#1A1218;margin:0 0 8px">¡Bienvenida!</h2>
+          <p style="color:#999;font-size:14px;margin:0;line-height:1.6">Vamos a configurar tu espacio en La Bitácora.<br>Solo toma un minuto.</p>
+        </div>
+        <div class="form-group">
+          <label>¿Cómo se llama tu estudio?</label>
+          <input type="text" id="ob-salon-name" placeholder="Ej: Glam Studio" onkeydown="if(event.key==='Enter') obStep1Next()">
+        </div>
+        <div class="login-error" id="ob-step1-error" style="display:none"></div>
+        <button class="btn btn-primary btn-full" id="ob-btn-1" onclick="obStep1Next()" style="margin-top:8px">Continuar →</button>
+      </div>
+
+      <!-- Step 2: Contraseña -->
+      <div id="ob-step-2" style="display:none">
+        <div style="text-align:center;margin-bottom:28px">
+          <div style="font-size:44px;margin-bottom:14px">🔑</div>
+          <h2 style="font-size:22px;font-weight:700;color:#1A1218;margin:0 0 8px">Crea tu contraseña</h2>
+          <p style="color:#999;font-size:14px;margin:0;line-height:1.6">Elige una contraseña personal para proteger tu cuenta.</p>
+        </div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <div style="position:relative">
+            <input type="password" id="ob-pass-new" placeholder="Mínimo 6 caracteres" style="padding-right:42px;width:100%" onkeydown="if(event.key==='Enter') obStep2Next()">
+            <button type="button" onclick="togglePassVis('ob-pass-new')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-4);padding:4px;display:flex;align-items:center" tabindex="-1"><svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Confirmar contraseña</label>
+          <input type="password" id="ob-pass-confirm" placeholder="Repite la contraseña" onkeydown="if(event.key==='Enter') obStep2Next()">
+        </div>
+        <div class="login-error" id="ob-step2-error" style="display:none"></div>
+        <button class="btn btn-primary btn-full" id="ob-btn-2" onclick="obStep2Next()" style="margin-top:8px">Entrar a La Bitácora 💅</button>
+        <button onclick="obSkipPassword()" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;padding:8px">Cambiar contraseña después</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1563,7 +1599,7 @@ async function loadSalonForOwner() {
     .single();
 
   if (error || !salon) {
-    openModal('modal-onboarding');
+    showOnboarding();
     return;
   } else if (salon.active === false) {
     showInactiveScreen();
@@ -1703,19 +1739,53 @@ function showInactiveScreen() {
   el.style.display = 'flex';
 }
 
-async function doOnboarding() {
-  const name = document.getElementById('onboarding-salon-name').value.trim();
-  const err = document.getElementById('onboarding-error');
+function showOnboarding() {
+  const user = currentSession?.user;
+  const firstName = (user?.user_metadata?.full_name || '').split(' ')[0];
+  if (firstName) document.getElementById('ob-welcome-title').textContent = `¡Bienvenida, ${firstName}! 🌸`;
+  document.getElementById('screen-onboarding').style.display = 'block';
+}
+
+function hideOnboarding() {
+  document.getElementById('screen-onboarding').style.display = 'none';
+}
+
+async function obStep1Next() {
+  const name = document.getElementById('ob-salon-name').value.trim();
+  const err = document.getElementById('ob-step1-error');
   err.style.display = 'none';
-  if (!name) { err.textContent = 'Ingresa el nombre de tu salón'; err.style.display = 'block'; return; }
-  const btn = document.getElementById('onboarding-btn');
-  btn.disabled = true; btn.textContent = 'Creando...';
+  if (!name) { err.textContent = 'Ingresa el nombre de tu estudio'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('ob-btn-1');
+  btn.disabled = true; btn.textContent = 'Guardando...';
   const { error } = await sb.from('salons').insert({ owner_id: currentSession.user.id, name });
   if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Continuar →'; return; }
-  closeModal('modal-onboarding');
   await loadSalonForOwner();
-  // Pedir cambio de contraseña la primera vez
-  openModal('modal-change-password');
+  btn.disabled = false; btn.textContent = 'Continuar →';
+  document.getElementById('ob-step-1').style.display = 'none';
+  document.getElementById('ob-step-2').style.display = 'block';
+  document.getElementById('ob-dot-1').style.cssText += ';width:6px;background:#F0D0D9';
+  document.getElementById('ob-dot-2').style.cssText += ';width:24px;background:#E8537A';
+  document.getElementById('ob-pass-new').focus();
+}
+
+async function obStep2Next() {
+  const newPass = document.getElementById('ob-pass-new').value;
+  const confirm = document.getElementById('ob-pass-confirm').value;
+  const err = document.getElementById('ob-step2-error');
+  err.style.display = 'none';
+  if (newPass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres'; err.style.display = 'block'; return; }
+  if (newPass !== confirm) { err.textContent = 'Las contraseñas no coinciden'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('ob-btn-2');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const { error } = await sb.auth.updateUser({ password: newPass });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Entrar a La Bitácora 💅'; return; }
+  hideOnboarding();
+  showToast('¡Todo listo! Bienvenida a La Bitácora 🌸', 'success');
+}
+
+function obSkipPassword() {
+  hideOnboarding();
+  showToast('Recuerda cambiar tu contraseña desde Configuración', 'info');
 }
 
 async function doChangePassword() {
@@ -5049,7 +5119,7 @@ async function checkExistingSession() {
     return;
   }
   // Session valid but no salon or worker — show onboarding for new Hotmart users
-  openModal('modal-onboarding');
+  showOnboarding();
 }
 checkExistingSession();
 
