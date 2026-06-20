@@ -654,6 +654,19 @@ body {
 <body>
 
 <!-- ——— LOGIN SCREEN ——— -->
+<!-- ——— SPLASH: verificando sesión ——— -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:99999;background:#FBF7F9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--rose),var(--rose-dark));display:flex;align-items:center;justify-content:center">
+    <svg viewBox="0 0 24 24" fill="white" style="width:28px;height:28px"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+  </div>
+  <div style="width:32px;height:3px;background:var(--rose-mid);border-radius:2px;overflow:hidden">
+    <div style="height:100%;background:var(--rose);border-radius:2px;animation:splash-bar 1.2s ease-in-out infinite"></div>
+  </div>
+</div>
+<style>
+@keyframes splash-bar { 0%{width:0;margin-left:0} 50%{width:100%;margin-left:0} 100%{width:0;margin-left:100%} }
+</style>
+
 <div id="login-screen" class="screen active">
   <div class="login-card">
     <div class="login-logo">
@@ -2241,6 +2254,7 @@ function togglePassVis(inputId) {
 }
 
 function launchApp() {
+  hideSplash();
   applyTheme(localStorage.getItem('lbitacora_theme') || 'light');
   // Update header
   document.getElementById('app-salon-name').textContent = store.config.salonName;
@@ -5184,9 +5198,14 @@ function renderReporte() {
 // ═══════════════════════════════════════════════
 // INIT — session auto-restore
 // ═══════════════════════════════════════════════
+function hideSplash() {
+  const el = document.getElementById('splash-screen');
+  if (el) el.style.display = 'none';
+}
+
 async function checkExistingSession() {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
+  if (!session) { hideSplash(); return; }
   currentSession = session;
   // Try to restore as admin
   const { data: salon } = await sb.from('salons').select('*').eq('owner_id', session.user.id).single();
@@ -5231,6 +5250,7 @@ async function checkExistingSession() {
     return;
   }
   // Session valid but no salon or worker — show onboarding for new Hotmart users
+  hideSplash();
   showOnboarding();
 }
 checkExistingSession();
