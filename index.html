@@ -642,52 +642,20 @@ body {
       <h1 id="login-salon-name">La Bitácora</h1>
       <p>Gestión de salón de belleza</p>
     </div>
-    <div class="login-roles">
-      <div class="role-card selected" onclick="selectRole('admin')" id="role-admin">
-        <div class="role-icon">👑</div>
-        <div class="role-name">Dueña / Admin</div>
-      </div>
-      <div class="role-card" onclick="selectRole('worker')" id="role-worker">
-        <div class="role-icon">💅</div>
-        <div class="role-name">Trabajadora</div>
-      </div>
+    <div class="form-group">
+      <label>Correo</label>
+      <input type="email" id="login-admin-email" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter') doLogin()">
     </div>
-    <!-- Admin password field -->
-    <div id="admin-pass-group">
-      <div class="form-group">
-        <label>Correo</label>
-        <input type="email" id="login-admin-email" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter') doLogin()">
+    <div class="form-group">
+      <label>Contraseña</label>
+      <div style="position:relative">
+        <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" style="padding-right:42px;width:100%">
+        <button type="button" onclick="togglePassVis('login-password')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-4);padding:4px;display:flex;align-items:center" tabindex="-1">
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg>
+        </button>
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <div style="position:relative">
-          <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" style="padding-right:42px;width:100%">
-          <button type="button" onclick="togglePassVis('login-password')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-4);padding:4px;display:flex;align-items:center" tabindex="-1">
-            <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg>
-          </button>
-        </div>
-      </div>
+      <p style="font-size:11px;color:var(--ink-4);margin:5px 0 0">Trabajadoras: usa tu número de cédula</p>
     </div>
-    <!-- Worker fields -->
-    <div id="worker-login-group" style="display:none">
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" id="login-worker-email" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter') doLogin()"
-          style="width:100%;padding:10px 14px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:14px;outline:none">
-      </div>
-      <div class="form-group">
-        <label>Número de documento</label>
-        <div style="position:relative">
-          <input type="password" id="login-worker-doc" placeholder="Tu documento de identidad" onkeydown="if(event.key==='Enter') doLogin()"
-            style="width:100%;padding:10px 42px 10px 14px;border:1.5px solid var(--ink-5);border-radius:var(--r-sm);font-family:inherit;font-size:14px;outline:none">
-          <button type="button" onclick="togglePassVis('login-worker-doc')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-4);padding:4px;display:flex;align-items:center" tabindex="-1">
-            <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path d="M10 12a2 2 0 100-4 2 2 0 000 4zm6.364-3a6.364 6.364 0 11-12.728 0 6.364 6.364 0 0112.728 0z"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Hidden select kept for legacy (not shown) -->
-    <select id="login-worker-select" style="display:none"></select>
     <div class="login-error" id="login-error">Correo o documento incorrecto</div>
     <div id="signup-link" style="text-align:center;margin-bottom:12px;display:none">
       <span style="font-size:13px;color:var(--ink-3)">¿Primera vez? </span>
@@ -1443,6 +1411,57 @@ body {
   </div>
 </div>
 
+<!-- ——— SCREEN: TOUR GUIADO ——— -->
+<div id="screen-tour" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,0.55);display:none;align-items:flex-end;justify-content:center;padding:0">
+  <div style="background:#FBF7F9;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:32px 28px 40px;position:relative">
+
+    <!-- Progress dots -->
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:28px" id="tour-dots">
+      <div id="tour-dot-0" style="width:24px;height:5px;border-radius:3px;background:#E8537A;transition:all .3s"></div>
+      <div id="tour-dot-1" style="width:5px;height:5px;border-radius:3px;background:#F0D0D9;transition:all .3s"></div>
+      <div id="tour-dot-2" style="width:5px;height:5px;border-radius:3px;background:#F0D0D9;transition:all .3s"></div>
+    </div>
+
+    <!-- Step 0: El Catálogo -->
+    <div id="tour-step-0">
+      <div style="font-size:42px;text-align:center;margin-bottom:14px">📋</div>
+      <h3 style="font-size:19px;font-weight:700;color:#1A1218;text-align:center;margin:0 0 10px">Tu catálogo de servicios</h3>
+      <p style="font-size:14px;color:#777;line-height:1.7;text-align:center;margin:0 0 24px">
+        Acá agregas todo lo que ofreces — manicura, semipermanente, nail art — con su precio.
+        Cuando vayas a registrar un servicio, solo eliges del catálogo y listo.
+      </p>
+      <button class="btn btn-primary btn-full" onclick="tourNext(0)">Siguiente →</button>
+      <button onclick="tourSkip()" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;padding:8px">Saltar tour</button>
+    </div>
+
+    <!-- Step 1: Trabajadoras -->
+    <div id="tour-step-1" style="display:none">
+      <div style="font-size:42px;text-align:center;margin-bottom:14px">💅</div>
+      <h3 style="font-size:19px;font-weight:700;color:#1A1218;text-align:center;margin:0 0 10px">¿Trabajas con alguien más?</h3>
+      <p style="font-size:14px;color:#777;line-height:1.7;text-align:center;margin:0 0 24px">
+        Puedes agregar a tu equipo desde <strong style="color:#E8537A">Configuración</strong>.
+        Cada trabajadora tiene su propio registro. La app les calcula su liquidación automáticamente.
+        <br><br>
+        Si trabajas sola, no necesitas configurar esto.
+      </p>
+      <button class="btn btn-primary btn-full" onclick="tourNext(1)">Siguiente →</button>
+      <button onclick="tourSkip()" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;padding:8px">Saltar tour</button>
+    </div>
+
+    <!-- Step 2: El Cierre -->
+    <div id="tour-step-2" style="display:none">
+      <div style="font-size:42px;text-align:center;margin-bottom:14px">💰</div>
+      <h3 style="font-size:19px;font-weight:700;color:#1A1218;text-align:center;margin:0 0 10px">El cierre del día</h3>
+      <p style="font-size:14px;color:#777;line-height:1.7;text-align:center;margin:0 0 24px">
+        En <strong style="color:#E8537A">Servicios</strong> registras lo que hiciste cada día.
+        La Bitácora suma tus ingresos, genera el reporte de tu equipo y lleva el historial de todo tu negocio.
+      </p>
+      <button class="btn btn-primary btn-full" onclick="tourFinish()">¡Empezar! Ir al catálogo 💅</button>
+    </div>
+
+  </div>
+</div>
+
 <!-- ——— MODAL: CAMBIO DE CONTRASEÑA INICIAL ——— -->
 <div class="modal-overlay" id="modal-change-password">
   <div class="modal">
@@ -1546,34 +1565,26 @@ let currentWorkerRecord = null; // worker row if role=worker
 // AUTH LAYER — replaces doLogin/doLogout
 // ═══════════════════════════════════════════════
 async function doLogin() {
-  const role = document.getElementById('role-admin').classList.contains('selected') ? 'admin' : 'worker';
+  const email = document.getElementById('login-admin-email').value.trim();
+  const pass = document.getElementById('login-password').value;
   const err = document.getElementById('login-error');
   err.style.display = 'none';
+  if (!email) { err.textContent = 'Ingresa tu correo'; err.style.display = 'block'; return; }
+  if (!pass) { err.textContent = 'Ingresa tu contraseña'; err.style.display = 'block'; return; }
 
-  if (role === 'admin') {
-    const email = document.getElementById('login-admin-email')?.value.trim();
-    const pass = document.getElementById('login-password').value;
-    if (!email) { err.textContent = 'Ingresa tu correo'; err.style.display = 'block'; return; }
-    if (!pass) { err.textContent = 'Ingresa tu contraseña'; err.style.display = 'block'; return; }
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) { err.textContent = 'Correo o contraseña incorrectos'; err.style.display = 'block'; return; }
-    currentSession = data.session;
-    await loadSalonForOwner();
-  } else {
-    // Worker logs in with email + document number as password
-    const email = document.getElementById('login-worker-email')?.value.trim();
-    const doc = document.getElementById('login-worker-doc')?.value.trim();
-    if (!email) { err.textContent = 'Ingresa tu correo'; err.style.display = 'block'; return; }
-    if (!doc) { err.textContent = 'Ingresa tu número de documento'; err.style.display = 'block'; return; }
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: doc });
-    if (error) { err.textContent = 'Correo o documento incorrecto'; err.style.display = 'block'; return; }
-    currentSession = data.session;
-    // Load worker record
-    const { data: workerRow } = await sb.from('workers').select('*, salons(*)').eq('auth_user_id', currentSession.user.id).eq('active', true).single();
-    if (!workerRow) { err.textContent = 'Trabajadora no encontrada'; err.style.display = 'block'; await sb.auth.signOut(); return; }
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { err.textContent = 'Correo o contraseña incorrectos'; err.style.display = 'block'; return; }
+  currentSession = data.session;
+
+  // Intentar ruta de dueña primero
+  const { data: salon } = await sb.from('salons').select('*').eq('owner_id', currentSession.user.id).single();
+  if (salon) { await loadSalonForOwner(); return; }
+
+  // Intentar ruta de trabajadora
+  const { data: workerRow } = await sb.from('workers').select('*, salons(*)').eq('auth_user_id', currentSession.user.id).eq('active', true).single();
+  if (workerRow) {
     currentSalonId = workerRow.salon_id;
     currentWorkerRecord = workerRow;
-    // Load salon config
     if (workerRow.salons) {
       const s = workerRow.salons;
       store.config.salonName = s.name;
@@ -1587,7 +1598,11 @@ async function doLogin() {
     await loadAllData();
     currentUser = { role: 'worker', workerId: workerRow.id, workerName: workerRow.name };
     launchApp();
+    return;
   }
+
+  // Usuario nuevo sin salón ni trabajadora — onboarding
+  showOnboarding();
 }
 
 
@@ -1780,12 +1795,35 @@ async function obStep2Next() {
   const { error } = await sb.auth.updateUser({ password: newPass });
   if (error) { err.textContent = error.message; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Entrar a La Bitácora 💅'; return; }
   hideOnboarding();
-  showToast('¡Todo listo! Bienvenida a La Bitácora 🌸', 'success');
+  startTour();
 }
 
 function obSkipPassword() {
   hideOnboarding();
-  showToast('Recuerda cambiar tu contraseña desde Configuración', 'info');
+  startTour();
+}
+
+function startTour() {
+  document.getElementById('screen-tour').style.display = 'flex';
+}
+
+function tourNext(currentStep) {
+  document.getElementById(`tour-step-${currentStep}`).style.display = 'none';
+  document.getElementById(`tour-dot-${currentStep}`).style.cssText += ';width:5px;background:#F0D0D9';
+  const next = currentStep + 1;
+  document.getElementById(`tour-step-${next}`).style.display = 'block';
+  document.getElementById(`tour-dot-${next}`).style.cssText += ';width:24px;background:#E8537A';
+}
+
+function tourSkip() {
+  document.getElementById('screen-tour').style.display = 'none';
+  switchTab('servicios');
+}
+
+function tourFinish() {
+  document.getElementById('screen-tour').style.display = 'none';
+  switchTab('servicios');
+  showToast('¡Bienvenida! Empieza agregando tus servicios 💅', 'success');
 }
 
 async function doChangePassword() {
