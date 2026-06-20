@@ -1815,10 +1815,13 @@ function toggleTheme() {
 function openWaClient() {
   const phone = window._currentWaPhone || '';
   const msg = window._currentWaMsg || '';
-  const url = phone
-    ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
-    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank') || (window.location.href = url);
+  const encoded = encodeURIComponent(msg);
+  // En iOS usar esquema nativo whatsapp:// para evitar problemas con PWA
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const url = isIOS
+    ? (phone ? `whatsapp://send?phone=${phone}&text=${encoded}` : `whatsapp://send?text=${encoded}`)
+    : (phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`);
+  window.location.href = url;
 }
 
 async function copyClientMsg() {
