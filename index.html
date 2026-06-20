@@ -1206,10 +1206,13 @@ body {
     <div class="modal-footer">
       <button class="btn btn-danger" onclick="deleteService()" id="btn-delete-service" style="margin-right:auto">Eliminar</button>
       <button class="btn btn-secondary" onclick="editService()" id="btn-edit-service">Editar</button>
-      <a id="btn-wa-client" target="_blank" rel="noopener" style="display:none;align-items:center;gap:6px;padding:8px 14px;background:#25D366;color:white;border-radius:var(--r-sm);font-size:13px;font-weight:600;text-decoration:none;cursor:pointer">
+      <button id="btn-copy-msg" onclick="copyClientMsg()" style="display:none;align-items:center;gap:5px;padding:8px 12px;background:var(--surface-2);border:1.5px solid var(--ink-5);color:var(--ink-2);border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer">
+        📋 Copiar
+      </button>
+      <button id="btn-wa-client" onclick="openWaClient()" style="display:none;align-items:center;gap:6px;padding:8px 14px;background:#25D366;color:white;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;border:none">
         <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.938.536 3.745 1.463 5.287L2 22l4.835-1.447A9.944 9.944 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
         Cobrar
-      </a>
+      </button>
       <button class="btn btn-primary" onclick="closeModal('modal-detalle')">Cerrar</button>
     </div>
   </div>
@@ -1794,6 +1797,30 @@ function applyTheme(theme) {
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+function openWaClient() {
+  const phone = window._currentWaPhone || '';
+  const msg = window._currentWaMsg || '';
+  const url = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank') || (window.location.href = url);
+}
+
+async function copyClientMsg() {
+  const msg = window._currentWaMsg || '';
+  try {
+    await navigator.clipboard.writeText(msg);
+    showToast('Mensaje copiado 📋', 'success');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = msg; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Mensaje copiado 📋', 'success');
+  }
 }
 
 function showInactiveScreen() {
@@ -2870,15 +2897,14 @@ function showServiceDetail(id) {
   if (delBtn) delBtn.style.display = currentUser.role === 'admin' ? '' : 'none';
 
   // WhatsApp "Cobrar" button
+  const waMsg = buildClientWaMsg(siblings, s.client, grandTotal);
+  const phone = (store.clientData?.[s.client]?.phone || '').replace(/\D/g, '');
+  window._currentWaMsg = waMsg;
+  window._currentWaPhone = phone;
   const waBtn = document.getElementById('btn-wa-client');
-  if (waBtn) {
-    const waMsg = buildClientWaMsg(siblings, s.client, grandTotal);
-    const phone = (store.clientData?.[s.client]?.phone || '').replace(/\D/g, '');
-    waBtn.href = phone
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(waMsg)}`
-      : `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
-    waBtn.style.display = 'inline-flex';
-  }
+  const copyBtn = document.getElementById('btn-copy-msg');
+  if (waBtn) waBtn.style.display = 'inline-flex';
+  if (copyBtn) copyBtn.style.display = 'inline-flex';
 
   openModal('modal-detalle');
 }
